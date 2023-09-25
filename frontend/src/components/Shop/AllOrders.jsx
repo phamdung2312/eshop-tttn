@@ -8,6 +8,8 @@ import { getAllOrdersOfShop } from "../../redux/actions/order";
 import { AiOutlineArrowRight } from "react-icons/ai";
 import "./AllOrder.css";
 
+import * as XLSX from "xlsx";
+
 const AllOrders = () => {
   const [valStartDay, setValStartDay] = useState("");
   const [valEndDay, setValEndDay] = useState("");
@@ -25,6 +27,30 @@ const AllOrders = () => {
     setValEndDay(e.target.value);
   };
 
+  //export excel
+
+  const allOrders = orders?.map((allOrder) => {
+    return {
+      ["Mã đơn hàng"]: allOrder._id,
+      ["Tình trạng"]: allOrder.status,
+      ["Số lượng"]: allOrder.cart.length,
+
+      ["Tổng tiền"]:
+        allOrder.totalPrice.toLocaleString("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        }) + "",
+    };
+  });
+
+  const handleExport = () => {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(allOrders);
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+    XLSX.writeFile(wb, "my-data.xlsx");
+  };
+
   const getAllOrders = orders?.filter((item) => {
     const orderDate = new Date(item.createdAt.slice(0, 10));
     return (
@@ -34,6 +60,7 @@ const AllOrders = () => {
 
   const totalOrders = getAllOrders?.length;
 
+  // export excel
   const columns = [
     { field: "id", headerName: "Mã đơn hàng", minWidth: 150, flex: 0.7 },
 
@@ -121,6 +148,7 @@ const AllOrders = () => {
         <Loader />
       ) : (
         <div className="w-full mx-8 pt-1 mt-10 bg-white">
+          <button onClick={handleExport}>Export User Data</button>
           <DataGrid
             rows={row}
             columns={columns}
